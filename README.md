@@ -213,19 +213,22 @@ TRAIN_ITERS=50000 \
 bash scripts/rlbench/train_peract.sh
 ```
 
-To run the complete single-task `stack_cups` workflow (training with validation,
-online RLBench testing, a validation plot, and two test-rollout MP4/GIF pairs):
+To run the complete single-task `place_cups` workflow (dataset conversion,
+training with validation, online RLBench testing, a validation plot, and two
+test-rollout MP4/GIF pairs):
 
 ```bash
 conda activate 3dfa
-bash scripts/rlbench/run_stack_cups_pipeline.sh
+bash scripts/rlbench/run_place_cups_pipeline.sh
 ```
 
-This uses `zarr_datasets/peract_stack_cups`, validates every 4,000 iterations,
-selects `best.pth` for testing, and writes visuals under
-`visualizations/peract_stack_cups/`. It resumes an interrupted training run
-from `last.pth`; a completed run is skipped on later invocations. The script
-requires Matplotlib, Xvfb, FFmpeg, and the PerAct RLBench/PyRep setup above.
+This converts the downloaded `peract_raw/Peract_packaged` demonstrations into
+`zarr_datasets/peract_place_cups`, then trains for 50,000 iterations with
+validation every 4,000 iterations. It selects `best.pth` for testing and writes
+checkpoints under `train_logs/PeractPlaceCups/` and visuals under
+`visualizations/peract_place_cups/`. It resumes interrupted training from
+`last.pth`; a completed run is skipped on later invocations. The script requires
+Matplotlib, Xvfb, FFmpeg, and the PerAct RLBench/PyRep setup above.
 
 `DATASET_DIR` must contain `train.zarr` and `val.zarr`. Checkpoints are saved
 under `train_logs/$EXP_NAME/`. The tested PerAct launcher uses one GPU, batch
