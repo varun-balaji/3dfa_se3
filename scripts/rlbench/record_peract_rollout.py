@@ -26,7 +26,7 @@ from online_evaluation_rlbench.utils_with_rlbench import (
 
 def parse_args():
     parser = argparse.ArgumentParser(description=__doc__)
-    parser.add_argument("--task", choices=("push_buttons", "stack_cups"), default="push_buttons")
+    parser.add_argument("--task", choices=("push_buttons", "stack_cups", "place_cups"), default="push_buttons")
     parser.add_argument("--checkpoint", type=Path, required=True)
     parser.add_argument("--data-dir", type=Path, default=Path("peract_raw/test"))
     parser.add_argument("--output-dir", type=Path, required=True)
