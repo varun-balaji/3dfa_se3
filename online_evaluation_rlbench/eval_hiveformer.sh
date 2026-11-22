@@ -1,11 +1,11 @@
-exp=hiveformer
+exp=${EXP_NAME:-hiveformer}
 tasks=(
     close_door
 )
 
 # Testing arguments
-checkpoint=hiveformer_close_door.pth
-checkpoint_alias=hiveformer_close_door
+checkpoint=${CHECKPOINT:-hiveformer_close_door.pth}
+checkpoint_alias=${CHECKPOINT_ALIAS:-hiveformer_close_door}
 
 max_tries=2
 max_steps=20
@@ -14,7 +14,7 @@ collision_checking=false
 seed=0
 
 # Dataset arguments
-data_dir=/data/group_data/katefgroup/datasets/hiveformer_clean/
+data_dir=${DATA_DIR:-hiveformer_raw/test/}
 dataset=HiveformerRLBench
 image_size=256,256
 

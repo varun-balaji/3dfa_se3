@@ -1,29 +1,33 @@
-DATA_PATH=peract_raw/
-ZARR_PATH=zarr_datasets/peract/
+#!/usr/bin/env bash
+set -euo pipefail
 
-# Save current directory
-CURR_DIR=$(pwd)
+REPO_ROOT=$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)
+DATA_PATH="$REPO_ROOT/peract_raw"
+ZARR_PATH="$REPO_ROOT/zarr_datasets/peract"
+TASKS=("$@")
+if [[ ${#TASKS[@]} -eq 0 ]]; then
+    TASKS=(push_buttons stack_cups)
+fi
 
-# Good news, PerAct data is pre-generated!
-# Download the packaged 3DDA data
-cd ${DATA_PATH}
-wget https://huggingface.co/katefgroup/3d_diffuser_actor/resolve/main/Peract_packaged.zip
-unzip Peract_packaged.zip
-rm Peract_packaged.zip
+mkdir -p "$DATA_PATH" "$ZARR_PATH"
 
-# We need the test seeds - yes, nothing else is needed for the test set
-# Download them
-wget https://huggingface.co/katefgroup/3d_flowmatch_actor/resolve/main/peract_test.zip
-unzip peract_test.zip
-rm peract_test.zip
-mv ${DATA_PATH}/peract_test ${DATA_PATH}/test
+if [[ ! -d "$DATA_PATH/Peract_packaged" ]]; then
+    wget -O "$DATA_PATH/Peract_packaged.zip" \
+        https://huggingface.co/katefgroup/3d_diffuser_actor/resolve/main/Peract_packaged.zip
+    unzip "$DATA_PATH/Peract_packaged.zip" -d "$DATA_PATH"
+    rm "$DATA_PATH/Peract_packaged.zip"
+fi
 
-# Return to current directory
-cd "$CURR_DIR"
+if [[ ! -d "$DATA_PATH/test" ]]; then
+    wget -O "$DATA_PATH/peract_test.zip" \
+        https://huggingface.co/katefgroup/3d_flowmatch_actor/resolve/main/peract_test.zip
+    unzip "$DATA_PATH/peract_test.zip" -d "$DATA_PATH"
+    rm "$DATA_PATH/peract_test.zip"
+    mv "$DATA_PATH/peract_test" "$DATA_PATH/test"
+fi
 
-# Then we package to zarr for training
-cd current_repo
+cd "$REPO_ROOT"
 python data_processing/peract_to_zarr.py \
-    --root ${DATA_PATH}/Peract_packaged/ \
-    --tgt ${ZARR_PATH}
-# You can safely delete the Peract_packaged folder now
+    --root "$DATA_PATH/Peract_packaged/" \
+    --tgt "$ZARR_PATH/" \
+    --tasks "${TASKS[@]}"

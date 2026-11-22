@@ -1,20 +1,17 @@
-main_dir=Peract
+main_dir=${EXP_NAME:-Peract}
 
-DATA_PATH=/data/user_data/ngkanats
-
-train_data_dir=$DATA_PATH/zarr_datasets/peract/train.zarr/
-eval_data_dir=$DATA_PATH/zarr_datasets/peract/val.zarr/
+dataset_dir=${DATASET_DIR:-zarr_datasets/peract}
+train_data_dir=$dataset_dir/train.zarr/
+eval_data_dir=$dataset_dir/val.zarr/
 train_instructions=instructions/peract/instructions.json
 val_instructions=instructions/peract/instructions.json
 
 dataset=PeractTwoCam
-num_workers=4
-B=64  # we used 64 but you can use as low as 16 without much performance drop - it's much faster
-B_val=64
+num_workers=1
+B=16  # tested on a single 15 GB Tesla T4
+B_val=16
 chunk_size=1
-memory_limit=8  # this means 8GB CPU RAM per worker per GPU,
-# but it will never reach that, because these datasets are small
-# reduce this if you can't allocate more than 96GB of CPU memory
+memory_limit=0.5  # cache limit in GB per worker; fits a 16 GB host
 
 # Training/testing arguments
 val_freq=4000
@@ -23,7 +20,7 @@ lr=1e-4
 backbone_lr=1e-6  # doesn't matter when we don't finetune
 lr_scheduler=constant
 wd=1e-10
-train_iters=300000
+train_iters=${TRAIN_ITERS:-300000}
 use_compile=false  # much faster, but sometimes unstable
 use_ema=false
 lv2_batch_size=1  # you can increase this and divide B equally, speed/accuracy tradeoff

@@ -11,13 +11,20 @@ import numpy as np
 import torch
 from tqdm import tqdm
 
-from data_processing.rlbench_utils import store_instructions
-
-
 STORE_EVERY = 1
 NCAM = 4
 NHAND = 1
 IM_SIZE = 256
+
+PERACT_TASKS = [
+    "place_cups", "close_jar", "insert_onto_square_peg",
+    "light_bulb_in", "meat_off_grill", "open_drawer",
+    "place_shape_in_shape_sorter", "place_wine_at_rack_location",
+    "push_buttons", "put_groceries_in_cupboard",
+    "put_item_in_drawer", "put_money_in_safe", "reach_and_drag",
+    "slide_block_to_color_target", "stack_blocks", "stack_cups",
+    "sweep_to_dustpan_of_size", "turn_tap"
+]
 
 
 def parse_arguments():
@@ -25,10 +32,18 @@ def parse_arguments():
     # Tuples: (name, type, default)
     arguments = [
         ('root', str, '/data/group_data/katefgroup/VLA/Peract_packaged/'),
-        ('tgt', str, '/data/user_data/ngkanats/zarr_datasets/Peract_dat_zarr/')
+        ('tgt', str, '/data/user_data/ngkanats/zarr_datasets/Peract_dat_zarr/'),
+        ('instructions', str, 'instructions/peract/instructions.json')
     ]
     for arg in arguments:
         parser.add_argument(f'--{arg[0]}', type=arg[1], default=arg[2])
+    parser.add_argument(
+        '--tasks',
+        nargs='+',
+        choices=PERACT_TASKS,
+        default=['push_buttons', 'stack_cups'],
+        help='PerAct tasks to package (default: push_buttons stack_cups)'
+    )
 
     return parser.parse_args()
 
@@ -50,7 +65,9 @@ def all_tasks_main(split, tasks):
         return None
 
     cameras = ["left_shoulder", "right_shoulder", "wrist", "front"]
-    task2id = {task: t for t, task in enumerate(tasks)}
+    # Keep IDs compatible with datasets.rlbench.PERACT_TASKS even when only a
+    # subset of tasks is converted.
+    task2id = {task: PERACT_TASKS.index(task) for task in tasks}
 
     # Initialize zarr
     compressor = Blosc(cname='lz4', clevel=1, shuffle=Blosc.SHUFFLE)
@@ -121,23 +138,21 @@ def all_tasks_main(split, tasks):
 
 
 if __name__ == "__main__":
-    tasks = [
-        "place_cups", "close_jar", "insert_onto_square_peg",
-        "light_bulb_in", "meat_off_grill", "open_drawer",
-        "place_shape_in_shape_sorter", "place_wine_at_rack_location",
-        "push_buttons", "put_groceries_in_cupboard",
-        "put_item_in_drawer", "put_money_in_safe", "reach_and_drag",
-        "slide_block_to_color_target", "stack_blocks", "stack_cups",
-        "sweep_to_dustpan_of_size", "turn_tap"
-    ]
     args = parse_arguments()
+    tasks = args.tasks
     ROOT = args.root
     STORE_PATH = args.tgt
     # Create zarr data
     for split in ['train', 'val']:
         all_tasks_main(split, tasks)
-    # Store instructions as json (can be run independently)
-    os.makedirs('instructions/peract', exist_ok=True)
-    instr_dict = store_instructions(ROOT, tasks, ['train', 'val', 'test'])
-    with open('instructions/peract/instructions.json', 'w') as fid:
-        json.dump(instr_dict, fid)
+    # The packaged .dat tree does not contain RLBench's
+    # variation_descriptions.pkl files. Reuse the instruction metadata shipped
+    # with this repository and verify that it covers the selected tasks.
+    with open(args.instructions) as fid:
+        instr_dict = json.load(fid)
+    missing_tasks = sorted(set(tasks) - set(instr_dict))
+    if missing_tasks:
+        raise ValueError(
+            f"Missing tasks in {args.instructions}: {', '.join(missing_tasks)}"
+        )
+    print(f"Using instruction metadata from {args.instructions}")

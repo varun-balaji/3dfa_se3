@@ -1,11 +1,9 @@
 main_dir=hiveformer
 
-DATA_PATH=/data/user_data/ngkanats
-
 task=close_door
 
-train_data_dir=$DATA_PATH/zarr_datasets/hiveformer/$task/train.zarr/
-eval_data_dir=$DATA_PATH/zarr_datasets/hiveformer/$task/val.zarr/
+train_data_dir=zarr_datasets/hiveformer/$task/train.zarr/
+eval_data_dir=zarr_datasets/hiveformer/$task/val.zarr/
 train_instructions=instructions/hiveformer/$task.json
 val_instructions=instructions/hiveformer/$task.json
 

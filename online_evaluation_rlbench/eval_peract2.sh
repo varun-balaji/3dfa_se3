@@ -1,4 +1,4 @@
-exp=peract2
+exp=${EXP_NAME:-peract2}
 tasks=(
     bimanual_push_box
     bimanual_lift_ball
@@ -17,8 +17,8 @@ tasks=(
 
 
 # Testing arguments
-checkpoint=peract2.pth
-checkpoint_alias=my_awesome_peract2_model  # or something ugly
+checkpoint=${CHECKPOINT:-peract2.pth}
+checkpoint_alias=${CHECKPOINT_ALIAS:-peract2_model}
 # like: denoise3d-Peract2_3dfront_3dwrist-C120-B64-lr1e-4-constant-H3-rectified_flow
 
 max_tries=2
@@ -28,7 +28,7 @@ collision_checking=false
 seed=0
 
 # Dataset arguments
-data_dir=/data/group_data/katefgroup/VLA/peract2_raw_squash/test/
+data_dir=${DATA_DIR:-peract2_raw/test/}
 dataset=Peract2_3dfront_3dwrist
 image_size=256,256
 
